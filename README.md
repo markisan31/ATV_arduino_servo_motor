@@ -1,5 +1,6 @@
 # ATV_arduino_servo_motor
 
-# receiver - minu programm, kus saab servo suunda muuta, aga ise servo pöörleb aeglasemalt
+# ATV_program_050320_working_.ino - see töötava programmi viimane versioon
 
-# testMotor - lihtsalt paneb servo pöörlema norm kiirusega
+# ATV_program_050320_not_tested_.ino - see on optimiseeritud programm, aga pole testinud selle laboris
+
