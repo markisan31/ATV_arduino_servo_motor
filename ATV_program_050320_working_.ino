@@ -1,8 +1,8 @@
+#include <AccelStepper.h>
 
-//specifing arrays and variables to store values 
+//specifing arrays and variables to store values
 unsigned long int a,b,c;
 int x[15],ch1[15],ch[7],i;
-#include <AccelStepper.h>
 
 int motor2 = 6;// defines pin 7 as connected to the motor
 int motor_speed = 7;
@@ -29,9 +29,9 @@ Serial.begin(9600);
   pinMode(reverse, OUTPUT);
   attachInterrupt(digitalPinToInterrupt(2), read_me, FALLING);
   // enabling interrupt at pin 2
-  
-  
-  
+
+
+
 }
 void loop() {
 read_rc();
@@ -46,11 +46,11 @@ outputGasSignal(ch[2]);
 
 if (ch[5] > 10){
   digitalWrite(dir_1,LOW);
-  digitalWrite(pwm_1,HIGH);  
-} 
+  digitalWrite(pwm_1,HIGH);
+}
 if (ch[5] < 10){
   digitalWrite(dir_1,HIGH);
-  digitalWrite(pwm_1,HIGH);  
+  digitalWrite(pwm_1,HIGH);
 }
 
 if (ch[4] < 485){
@@ -66,7 +66,7 @@ if (ch[4] < 515 && ch[4] > 485){
   stepper.moveTo(0);
   stepper.run();
   delay(2);
-} 
+}
 
 
 
@@ -75,17 +75,17 @@ if (ch[4] < 515 && ch[4] > 485){
 
 void read_me()  {
  //this code reads value from RC reciever from PPM pin (Pin 2 or 3)
- //this code gives channel values from 0-1000 values 
+ //this code gives channel values from 0-1000 values
  //    -: ABHILASH :-    //
 a=micros(); //store time value a when pin value falling
 c=a-b;      //calculating time inbetween two peaks
-b=a;        // 
+b=a;        //
 x[i]=c;     //storing 15 value in array
 i=i+1;       if(i==15){for(int j=0;j<15;j++) {ch1[j]=x[j];}
-             i=0;}}//copy store all values from temporary array another array after 15 reading  
+             i=0;}}//copy store all values from temporary array another array after 15 reading
 void read_rc(){
 int i,j,k=0;
-  for(k=14;k>-1;k--){if(ch1[k]>5000){j=k;}}  //detecting separation space 10000us in that another array                     
+  for(k=14;k>-1;k--){if(ch1[k]>5000){j=k;}}  //detecting separation space 10000us in that another array
   for(i=1;i<=6;i++){ch[i]=max(0, min(1000, (ch1[i+j]-1000)));}}
   //assign 6 channel values after separation space
 
