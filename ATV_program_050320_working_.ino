@@ -34,12 +34,12 @@ void setup()
 void loop()
 {
   read_rc();
-  //Serial.print(ch[1]);Serial.print("\t");
-  //Serial.print(ch[2]);Serial.print("\t");
-  //Serial.print(ch[3]);Serial.print("\t");
-  //Serial.print(ch[4]);Serial.print("\t");
-  //Serial.print(ch[5]);Serial.print("\t");
-  //Serial.print(ch[6]);Serial.print("\n");
+  for (int i{}; i < 5; i++)
+  {
+    Serial.print(ch[i]); Serial.print("\t");
+  }
+  Serial.print(ch[6]); Serial.print("\n");
+
   outputGasSignal(ch[2]);
 
   if (ch[5] > 10)
@@ -47,7 +47,7 @@ void loop()
     digitalWrite(dir_1,LOW);
     digitalWrite(pwm_1,HIGH);
   }
-  
+
   if (ch[5] < 10)
   {
     digitalWrite(dir_1,HIGH);
@@ -88,11 +88,12 @@ void read_me()
 
   if(i==15)
   {
-    for(int j=0;j<15;j++) {ch1[j]=x[j];
-  }
-
+    for(int j=0;j<15;j++)
+    {
+      ch1[j]=x[j];
+    }
   i=0;
-}
+  }
 }//copy store all values from temporary array another array after 15 reading
 
 void read_rc()
