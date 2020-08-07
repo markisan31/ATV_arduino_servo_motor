@@ -4,7 +4,7 @@
 unsigned long int a,b,c;
 int x[15],ch1[15],ch[7],i;
 
-int motor2 = 6;// defines pin 7 as connected to the motor
+int motor2 = 6; // defines pin 7 as connected to the motor
 int motor_speed = 7;
 int pwm_1 = 8;
 int dir_1 = 9;
@@ -106,16 +106,15 @@ void read_rc()
     {
         if(ch1[k] > 5000)
         {
-            j=k;
+            j = k;
         }
     }  //detecting separation space 10000us in that another array
 
-    for(i = 1;i <= 6;i++)
+    for(i = 1; i <= 6; i++)
     {
         ch[i] = max(0, min(1000, (ch1[i+j]-1000)));
     }
-}
-    //assign 6 channel values after separation space
+} //assign 6 channel values after separation space
 
 void outputGasSignal(int speedInput)
 {
