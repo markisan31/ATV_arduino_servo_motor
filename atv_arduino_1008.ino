@@ -24,6 +24,12 @@ const int PIN_CS = 12;
 const int PIN_CLOCK = 13;
 const int PIN_DATA = 11;
 
+const int stepperDefaultPosition = 0;
+
+float leftSteer;
+float rightSteer;
+float maxLeftSteer = -50;
+float maxRightSteer = 50;
 
 
 int mappedOutputValueEncoder;
@@ -62,7 +68,7 @@ void loop()
     }
 
     encoder_data::encoder_data();
-    Serial.println(mappedOutputValueEncoder);
+    //Serial.println(mappedOutputValueEncoder);
 
     read_rc();
 
@@ -120,17 +126,47 @@ void turn(int channel4)
 {
     if (channel4 < 485)
     {
-        stepper.move(10);
-        stepper.run();
+        if (leftSteer < maxLeftSteer)
+        {
+            leftSteer = leftSteer + 10;
+            stepper.move(leftSteer);
+            stepper.run();
+        }
+        else if (leftSteer >= maxLeftSteer)
+        {
+            leftSteer = maxLeftSteer;
+            stepper.move(leftSteer);
+            stepper.run();
+        }
+        //stepper.move(10);
+        //stepper.move(leftSteer)
+        //stepper.run();
     }
     if (channel4 > 515)
     {
-        stepper.move(-10);
-        stepper.run();
+        if (rightSteer < maxRightSteer)
+        {
+            rightSteer = rightSteer + 10;
+            stepper.move(rightSteer);
+            stepper.run();
+        }
+        else if (rightSteer >= maxRightSteer)
+        {
+            rightSteer = maxRightSteer;
+            stepper.move(rightSteer);
+            stepper.run();
+        }
+        //stepper.move(-10);
+        //stepper.run();
     }
+
+    //TODO: FIX BELOW LINES VVV ACCORDING TO TOP LINES ^^^
     if (channel4 < 515 && channel4 > 485 || mappedOutputValueEncoder > 85 && mappedOutputValueEncoder < 95)
     {
-        stepper.moveTo(0);
+        //stepper.moveTo(0);
+        //stepper.run();
+        //delay(2);
+        stepper.moveTo(stepperDefaultPosition);
         stepper.run();
         delay(2);
     }
