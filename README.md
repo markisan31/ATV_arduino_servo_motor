@@ -1,4 +1,4 @@
-# ATV_arduino_servo_motor
+# Team välk arduino kood
 
 # ATV_program_050320_working_.ino - see töötava programmi viimane versioon
 
