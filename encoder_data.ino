@@ -13,12 +13,12 @@ void encoder_data()
     int pos = 0;
     int mappedOutputValue = 0;
 
-    for (int i = 0; i<10; i++)
+    for (int i = 0; i < 10; i++)
     {
         digitalWrite(PIN_CLOCK, LOW);
         digitalWrite(PIN_CLOCK, HIGH);
         byte b = digitalRead(PIN_DATA) == HIGH ? 1 : 0;
-        pos += b * pow(2, 10-(i+1));
+        pos += b * pow(2, 10 - (i + 1));
         mappedOutputValueEncoder = map(pos, 0, 1020, -180, 180); //Old low: 0, Old high: 1020, New low: -180, New high: 180
 
         if (mappedOutputValueEncoder < 85 && mappedOutputValueEncoder > 1)
