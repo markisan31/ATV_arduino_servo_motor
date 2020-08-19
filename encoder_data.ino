@@ -1,6 +1,6 @@
 #include <AccelStepper.h>
 
-namespace encoder_data
+namespace encoder_data 
 {
 
 AccelStepper stepper = AccelStepper(motorInterfaceType, motor_speed, motor2);
