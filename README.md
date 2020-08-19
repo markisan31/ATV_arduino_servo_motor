@@ -1,6 +1,5 @@
 # Team välk arduino kood
 
-# ATV_program_050320_working_.ino - see töötava programmi viimane versioon
+arduino_code_ver140820v1.ino - töötava programmi viimane versioon
 
-# ATV_program_050320_not_tested_.ino - see on optimiseeritud programm, aga pole testinud selle laboris
 
