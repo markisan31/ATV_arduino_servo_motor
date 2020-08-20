@@ -7,7 +7,7 @@
 //receiver attached to pin2
 PPMReader ppmReader(2, 0, false);
 static int count;
-int ch[9] = {0, 0, 0, 0, 0, 491, 491, 0, 0};
+int ch[9] = {0, 0, 500, 0, 0, 0, 491, 0, 0};
 
 //gas motor attached to pins 4(direction) and 5(pwm)
 const int gasMotorDirection = 4;
@@ -114,7 +114,7 @@ void pushBreak(int channel4) {
     digitalWrite(breakActuatorDirection, LOW);
     digitalWrite(breakActuatorPwm, HIGH);
   }
-  if (channel4 < 10) {
+  else if (channel4 < 10) {
     digitalWrite(breakActuatorDirection, HIGH);
     digitalWrite(breakActuatorPwm, HIGH);
   }
@@ -122,7 +122,6 @@ void pushBreak(int channel4) {
 
 void turn_wheels(int channel0) {
   if (channel0 < 485) {
-    Serial.print("Hello");
     digitalWrite(turningStepperDirection, HIGH);
 //    if (currentWheelPosition < maxLeftTurn) {
       for (int i = 0; i < 10000; i += 1) {
@@ -136,7 +135,6 @@ void turn_wheels(int channel0) {
 //    } 
   }
  if (channel0 > 515) {
-  Serial.print("Hello1");
   digitalWrite(turningStepperDirection, LOW);
 //  if (currentWheelPosition >= maxRightTurn){
     for (int i = 0; i < 10000; i += 1) {
@@ -149,25 +147,24 @@ void turn_wheels(int channel0) {
     }
 //  }
  }
- if (channel0 < 515 && channel0 > 485) {
-
-}
+// if (channel0 < 515 && channel0 > 485) {
+//
+//}
 }
 
 void outputGasSignal(int channel2) {
-  if (channel2 > 500 + 10) {
-    mappedOutputValue = map(channel2, 500, 1000, 45, 214);
+  if (channel2 > 515) {
+    mappedOutputValue = map(channel2, 515, 1000, 45, 214);
     digitalWrite(gasMotorDirection, HIGH);
     analogWrite(gasMotorPwm, mappedOutputValue);
   }
-  else if (channel2 < 500 - 10 ) {
-    mappedOutputValue = map(channel2, 490, 0, 45, 214);
+  else if (channel2 < 485 ) {
+    mappedOutputValue = map(channel2, 485, 0, 45, 214);
     digitalWrite(gasMotorDirection, LOW);
     analogWrite(gasMotorPwm, mappedOutputValue);
 
   }  else {
     analogWrite(gasMotorPwm, 45);
-    digitalWrite(gasMotorDirection, HIGH);
   }
 
 }
@@ -176,7 +173,6 @@ void encoder_data() {
   digitalWrite(encoderCsPin, HIGH);
   digitalWrite(encoderCsPin, LOW);
   int pos = 0;
-  //  int mappedOutputValue = 0;
   for (int i = 0; i < 10; i++) {
     digitalWrite(encoderClockPin, LOW);
     digitalWrite(encoderClockPin, HIGH);
@@ -200,10 +196,7 @@ void rightTurningLights (int channel6) {
     rightLightOn = true;
   }
   if (currentMillisRight > 3000 && currentMillisRight - previousMillisRight <= turnLightsInterval && leftLightOn == false) {
-    Serial.print("HelloRight");
-    Serial.print("\n");
     digitalWrite(rightTurnLight, HIGH);
-    //      rightLightOn = true;
   } else if (currentMillisRight - previousMillisRight > turnLightsInterval) {
     rightLightOn = false;
     digitalWrite(rightTurnLight, LOW);
@@ -216,10 +209,7 @@ void leftTurningLights (int channel6) {
     leftLightOn = true;
   }
   if (currentMillisLeft > 3000 && currentMillisLeft - previousMillisLeft <= turnLightsInterval && rightLightOn == false) {
-    Serial.print("HelloLeft");
-    Serial.print("\n");
     digitalWrite(leftTurnLight, HIGH);
-    //      leftLightOn = true;
   } else if ( currentMillisLeft - previousMillisLeft > turnLightsInterval) {
     leftLightOn = false;
     digitalWrite(leftTurnLight, LOW);
