@@ -1,5 +1,6 @@
 #include "PPMReader.h"
 
+//Using Arduino Mega
 //pins in use Digital - [2, 4, 5, 6, 7, 8, 9, 10, 11, 12], Analog - [0, 1, 2] 5V, GND
 //free pins Digital - [0, 1, 3, 13], Analog - [3, 4, 5], 3.3V, GND, GND, VIN
 
@@ -27,11 +28,11 @@ const int encoderCsPin = 11;
 const int encoderClockPin = 12;
 
 //turn lights attached to analog pins 0(left) and 1(right)
-#define leftTurnLight A0
-#define rightTurnLight A1
+#define leftTurnLight A0 //see muutub PWM pinniks
+#define rightTurnLight A1 //see muutub PWM pinniks
 
 //front and rear lights attached to analog pin 2
-#define rearFrontLights A2
+#define rearFrontLights A2 //see muutub PWM pinniks
 
 //all other variables
 int mappedOutputValue;
@@ -81,12 +82,19 @@ void loop() {
 
   pushBreak(ch[4]);
 
-  leftTurningLights(ch[6]);
+//  leftTurningLights(ch[6]);
 
+//  rightTurningLights(ch[6]);
+
+//  turnBackwardMovingLights(ch[2]);
+
+<<<<<<< HEAD:arduino_code_ver140820v1.ino
   rightTurningLights(ch[6]);
 
 //  turnBackwardMovingLights(ch[2]);
 
+=======
+>>>>>>> 7642d639f112c59cdcdb2c55fe586bdf86e5697f:arduino_code_ver140820v1/arduino_code_ver140820v1.ino
   
 
     Serial.print(ch[0]); Serial.print("\t");
@@ -96,8 +104,14 @@ void loop() {
     Serial.print(ch[5]); Serial.print("\t");
     Serial.print(ch[6]); Serial.print("\t");
     Serial.print(ch[5]); Serial.print("\t");
+<<<<<<< HEAD:arduino_code_ver140820v1.ino
     Serial.print(ch[8]); Serial.print("\n");
   turnFrontAndRearLightsOn(ch[5]);
+=======
+    Serial.print(currentWheelPosition); Serial.print("\t");
+    Serial.print(ch[8]); Serial.print("\n");
+//  turnFrontAndRearLightsOn(ch[5]);
+>>>>>>> 7642d639f112c59cdcdb2c55fe586bdf86e5697f:arduino_code_ver140820v1/arduino_code_ver140820v1.ino
 }
 
 
