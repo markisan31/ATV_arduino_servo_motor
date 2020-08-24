@@ -27,11 +27,11 @@ const int encoderDataPin = 10;
 const int encoderCsPin = 11;
 const int encoderClockPin = 12;
 
-//turn lights attached to analog pins 0(left) and 1(right)
+//turn lights attached to digital pwm pins 44(left) and 45(right)
 #define leftTurnLight 44 //see muutub PWM pinniks
 #define rightTurnLight 45 //see muutub PWM pinniks
 
-//front and rear lights attached to analog pin 2
+//front and rear lights attached to digital pwm pin 46
 #define rearFrontLights 46 //see muutub PWM pinniks
 
 //all other variables
