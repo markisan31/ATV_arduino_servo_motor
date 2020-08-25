@@ -63,7 +63,6 @@ void setup() {
   pinMode (turningStepperPulse, OUTPUT);
   pinMode (turningStepperDirection, OUTPUT);
   pinMode(gasMotorPwm, OUTPUT);
-  analogWrite(gasMotorPwm, 10);
   pinMode(gasMotorDirection, OUTPUT);
 }
 
@@ -82,9 +81,11 @@ void loop() {
 
   pushBreak(ch[4]);
 
-//  leftTurningLights(ch[6]);
+  leftTurningLights(ch[6]);
 
-//  rightTurningLights(ch[6]);
+  rightTurningLights(ch[6]);
+
+  turnFrontAndRearLightsOn(ch[5]);
 
 //  turnBackwardMovingLights(ch[2]);
 
@@ -97,7 +98,7 @@ void loop() {
 //    Serial.print(ch[5]); Serial.print("\t");
 //    Serial.print(currentWheelPosition); Serial.print("\t");
 //    Serial.print(ch[8]); Serial.print("\n");
-//  turnFrontAndRearLightsOn(ch[5]);
+
 }
 
 
