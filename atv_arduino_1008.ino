@@ -1,5 +1,4 @@
 #include <AccelStepper.h>
-#include "encoder_data.hpp"
 
 #define pwmPin 5
 #define reverse 4
@@ -62,12 +61,14 @@ void setup()
 
 void loop()
 {
+    //delay(500);
     for (i = 0; i < 7; i++)
     {
         ch[i] = 0;
     }
 
-    encoder_data::encoder_data();
+    encoder_data();
+    //encoder_data::encoder_data();
     //Serial.println(mappedOutputValueEncoder);
 
     read_rc();
@@ -126,46 +127,18 @@ void turn(int channel4)
 {
     if (channel4 < 485)
     {
-        if (leftSteer < maxLeftSteer)
-        {
-            leftSteer = leftSteer + 10;
-            stepper.move(leftSteer);
-            stepper.run();
-        }
-        else if (leftSteer >= maxLeftSteer)
-        {
-            leftSteer = maxLeftSteer;
-            stepper.move(leftSteer);
-            stepper.run();
-        }
-        //stepper.move(10);
-        //stepper.move(leftSteer)
-        //stepper.run();
-    }
-    if (channel4 > 515)
-    {
-        if (rightSteer < maxRightSteer)
-        {
-            rightSteer = rightSteer + 10;
-            stepper.move(rightSteer);
-            stepper.run();
-        }
-        else if (rightSteer >= maxRightSteer)
-        {
-            rightSteer = maxRightSteer;
-            stepper.move(rightSteer);
-            stepper.run();
-        }
-        //stepper.move(-10);
-        //stepper.run();
+        stepper.move(10);
+        stepper.run();
     }
 
-    //TODO: FIX BELOW LINES VVV ACCORDING TO TOP LINES ^^^
-    if (channel4 < 515 && channel4 > 485 || mappedOutputValueEncoder > 85 && mappedOutputValueEncoder < 95)
+    if (channel4 > 515)
     {
-        //stepper.moveTo(0);
-        //stepper.run();
-        //delay(2);
+        stepper.move(-10);
+        stepper.run();
+    }
+
+    if (channel4 < 515 && channel4 > 485)
+    {
         stepper.moveTo(stepperDefaultPosition);
         stepper.run();
         delay(2);
@@ -179,6 +152,7 @@ void pushBreak(int channel5)
         digitalWrite(dir_1, LOW);
         digitalWrite(pwm_1, HIGH);
     }
+
     if (channel5 < 10)
     {
         digitalWrite(dir_1, HIGH);
@@ -196,6 +170,7 @@ void outputGasSignal(int speedInput)
         digitalWrite(reverse, LOW);
         analogWrite(pwmPin, mappedOutputValue);
     }
+
     else if (speedInput < 500 - 50 )
     {
         mappedOutputValue = map(speedInput, 490, 0, 45, 214);
@@ -204,6 +179,7 @@ void outputGasSignal(int speedInput)
         digitalWrite(reverse, HIGH);
         analogWrite(pwmPin, mappedOutputValue);
     }
+
     else
     {
         //Serial.print(mappedOutputValue);
@@ -211,5 +187,122 @@ void outputGasSignal(int speedInput)
         analogWrite(pwmPin, 15);
         digitalWrite(reverse, LOW);
     }
+
+}
+
+void encoder_data()
+{
+    digitalWrite(PIN_CS, HIGH);
+    digitalWrite(PIN_CS, LOW);
+
+    int pos = 0;
+    int mappedOutputValue = 0;
+
+    for (int i = 0; i < 10; i++)
+    {
+        digitalWrite(PIN_CLOCK, LOW);
+        digitalWrite(PIN_CLOCK, HIGH);
+        byte b = digitalRead(PIN_DATA) == HIGH ? 1 : 0;
+        pos += b * pow(2, 10 - (i + 1));
+        mappedOutputValueEncoder = map(pos, 0, 1020, -180, 180); //Old low: 0, Old high: 1020, New low: -180, New high: 180
+    }
+
+    /*
+        if (mappedOutputValueEncoder < 85 && mappedOutputValueEncoder > 1)
+        {
+            //DO something
+            Serial.println("Reached left!");
+            Serial.println(mappedOutputValueEncoder);
+        }
+        else if (mappedOutputValueEncoder > 85)
+        {
+            Serial.println("Reached maximum left steer!"); Serial.println("Moved stepper motor to "); Serial.println(maxLeftSteer); Serial.println(mappedOutputValueEncoder);
+            stepper.move(maxLeftSteer);
+            stepper.run();
+        }
+        else if (mappedOutputValueEncoder < -1 && mappedOutputValueEncoder > -85)
+        {
+            //DO something
+            Serial.println("Reached right!");
+            Serial.println(mappedOutputValueEncoder);
+        }
+        else if (mappedOutputValueEncoder < -85)
+        {
+            Serial.println("Reached maximum right steer!"); Serial.println("Moved stepper motor to "); Serial.println(maxRightSteer); Serial.println(mappedOutputValueEncoder);
+            stepper.move(maxRightSteer);
+            stepper.run();
+        }
+        */
+        if (mappedOutputValueEncoder > maxLeftSteer && mappedOutputValueEncoder < -1)
+        {
+            stepper.move(0);
+            stepper.run();
+            rightSteer = 0;
+            leftSteer = leftSteer - 1;
+            if (leftSteer > maxLeftSteer)
+            {
+                stepper.move(leftSteer);
+                stepper.run();
+                Serial.println("Reached left!");
+                Serial.println(mappedOutputValueEncoder);
+            }
+            else if (leftSteer < maxLeftSteer)
+            {
+                stepper.move(maxLeftSteer);
+                stepper.run();
+
+                Serial.println(mappedOutputValueEncoder);
+            }
+        }
+        /*
+        else if(mappedOutputValueEncoder < maxLeftSteer)
+        {
+            stepper.move(maxLeftSteer);
+            stepper.run();
+
+            Serial.println("Reached maximum left steer!");
+        }
+        */
+        else if (mappedOutputValueEncoder < maxRightSteer && mappedOutputValueEncoder > 1)
+        {
+            stepper.move(0);
+            stepper.run();
+            leftSteer = 0;
+            rightSteer = rightSteer + 1;
+            if (rightSteer < maxRightSteer)
+            {
+                stepper.move(rightSteer);
+                stepper.run();
+                Serial.println("Reached right!");
+                Serial.println(mappedOutputValueEncoder);
+                Serial.println("right");
+                Serial.println(rightSteer);
+            }
+            else if (rightSteer > maxRightSteer)
+            {
+                stepper.move(maxRightSteer);
+                stepper.run();
+                Serial.println("lol");
+                Serial.println(mappedOutputValueEncoder);
+            }
+        }
+        /*
+        else if (mappedOutputValueEncoder > maxRightSteer)
+        {
+            stepper.move(maxRightSteer);
+            stepper.run();
+
+            Serial.println("Reached maximum right steer!");
+        }
+        */
+
+    for (int i = 0; i < 6; i++)
+    {
+        digitalWrite(PIN_CLOCK, LOW);
+        digitalWrite(PIN_CLOCK, HIGH);
+    }
+
+    digitalWrite(PIN_CLOCK, LOW);
+    digitalWrite(PIN_CLOCK, HIGH);
 
 }
