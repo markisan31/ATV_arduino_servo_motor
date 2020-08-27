@@ -5,6 +5,7 @@
 //free pins Digital - [0, 1, 3, 13], Analog - [3, 4, 5], 3.3V, GND, GND, VIN
 
 //receiver attached to pin2
+//
 PPMReader ppmReader(2, 0, false);
 static int count;
 int ch[9] = {500, 500, 500, 500, 0, 491, 491, 0, 0};
@@ -95,7 +96,7 @@ void loop() {
 
 =======
 >>>>>>> 7642d639f112c59cdcdb2c55fe586bdf86e5697f:arduino_code_ver140820v1/arduino_code_ver140820v1.ino
-  
+
 
     Serial.print(ch[0]); Serial.print("\t");
     Serial.print(ch[2]); Serial.print("\t");
@@ -147,7 +148,7 @@ void turn_wheels(int channel0) {
           digitalWrite(turningStepperPulse, LOW);
         }
       }
-//    } 
+//    }
   }
  if (channel0 > 515) {
   Serial.print("Hello1");
@@ -257,5 +258,5 @@ void turnBackwardMovingLights(int channel2) {
     digitalWrite(leftTurnLight, LOW);
     digitalWrite(rightTurnLight, LOW);
   }
-  
+
 }
