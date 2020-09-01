@@ -1,4 +1,4 @@
-void ReadSSI(void)  // Reads steering encoder value, 12-bit
+void ReadSSI(void)  // Reads steering 12-bit value
 {
     int i;
     char Resolution = 12;
