@@ -122,11 +122,6 @@ void loop()
     //Serial.print(ch[8]); Serial.print("\n");
 }
 
-
-/*
- See funktsioon loeb andmed ressiiverist,
- muudab nende väärtust 0 ... 1000ni ja kirjutab neid massiivi ch[]
-*/
 void read_rc()
 {
     while (ppmReader.get(count) != 0)
@@ -137,15 +132,6 @@ void read_rc()
     count = 0;
 }
 
-/*
- See funktsioon võtab andmed ch massiivi 4 elemendist
- ja seejärel kontrollib. Kui väärtus on rohkem, kui 10
- siis aktuaatori draivi DIR pinnile saadetakse LOW signaal
- ja aktuaatori draivi PWM pinnile saadetakse HIGH signaal.
- Kui väärtus on vöhem, kui 10 siis aktuaatori draivi
- DIR pinnile saadetakse HIGH signaalja aktuaatori draivi
- PWM pinnile saadetakse HIGH signaal.
-*/
 void pushBreak(int channel4)
 {
     if (channel4 > 10)
@@ -160,51 +146,19 @@ void pushBreak(int channel4)
     }
 }
 
-/*
- See funktsioon võtab andmed ch massiivi 0 elemendist
- ja seejärel kontrollib. Kui väärtus on vähem, kui 485
- siis samm mootori draivi DIR pinnile saadetakse HIGH signaal
- ja siis tsüklis iga 80 ms saadetakse pulse (ehk HIGH ja LOW
- signaalid üks teise järel) kuni tsükkel jõuab 10000ni. Kui
- väärtus on rohkem, kui 515 siis samm mootori draivi DIR
- pinnile saadetakse LOW signaal ja ülejöönud on sama.
-*/
-void turn_wheels(int channel0) //?
+void turn_wheels(int channel0)
 {
     if (channel0 < 485)
     {
-        //encoder_data();
-        //digitalWrite(turningStepperDirection, HIGH);
-        /*for (int i = 0; i < 10000; i += 1)
-        {
-            currentMicros = micros();
-            if (currentMicros - previousMicros >= delay_Micros)
-            {
-                previousMicros = currentMicros;
-                digitalWrite(turningStepperPulse, HIGH);
-                digitalWrite(turningStepperPulse, LOW);
-            }
-        }*/
         digitalWrite(turningStepperDirection, HIGH);
         digitalWrite(turningStepperPulse, HIGH);
         delayMicroseconds(10);
         digitalWrite(turningStepperPulse, LOW);
 
     }
+
     if (channel0 > 515)
     {
-        //encoder_data();
-        //digitalWrite(turningStepperDirection, LOW);
-        /*for (int i = 0; i < 10000; i += 1)
-        {
-            currentMicros = micros();
-            if (currentMicros - previousMicros >= delay_Micros)
-            {
-                previousMicros = currentMicros;
-                digitalWrite(turningStepperPulse, HIGH);
-                digitalWrite(turningStepperPulse, LOW);
-            }
-        }*/
         digitalWrite(turningStepperDirection, LOW);
         digitalWrite(turningStepperPulse, HIGH);
         delayMicroseconds(10);
@@ -213,21 +167,6 @@ void turn_wheels(int channel0) //?
     }
 }
 
-/*
- See funktsioon võtab andmed ch massiivi 2 elemendist
- ja seejärel kontrollib. Kui väärtus on rohkem kui 515
- siis väärtus muudetakse diaposoonist 515 ... 1000
- diaposoonini 45 ... 214, seejärel muudetud väärtus
- saadetakse signaalina läbi arduino analoog pinni
- kelly kontrollerile ja samal ajal saadetakse ka HIGH
- signaal kellysse mootori suuna muutmiseks. Kui väärtus
- on vähem kui 485 siis toimuvad umbes sama protsessid,
- vaid HIGH asemeel mootori suuna muutmiseks saadetakse LOW
- signaal. Kui signaal on vahemikus 485 .. 515 siis saadetakse
- väärtus 45 kellysse > mootori, see vool laseb mootoril olla
- töötavas seisundis. Kui mingi hetk mootor kaob selle voolu, siis
- peab tegema terve süsteemi restart.
- */
 void outputGasSignal(int channel2)
 {
     if (channel2 > 515)
@@ -249,47 +188,6 @@ void outputGasSignal(int channel2)
 
 }
 
-/*
-See funktsioon saadab encoderi CS ja CLK pinnidele
-HIGH ja LOW signaalid mingis jörjekorras ( seda ma täpselt ei
-oska seletada, kood on võetud internetist, peaks lugema kuidas
-enkooder töötab) ja siis enkooderist tulevad väärtused läbi D0 (data)
-pinni mis programm muudab diapasoonist 0 .. 1020 diapasoonini 0 .. 359
-ja see väärtus kirjutatakse globaalse muutujasse currentWheelPosition
-*/
-/*void encoder_data()
-{
-    digitalWrite(encoderCsPin, HIGH);
-    digitalWrite(encoderCsPin, LOW);
-
-    int pos = 0;
-    int mappedOutputValue = 0;
-
-    for (int i = 0; i < 10; i++)
-    {
-        digitalWrite(encoderClockPin, LOW);
-        digitalWrite(encoderClockPin, HIGH);
-        byte b = digitalRead(encoderDataPin) == HIGH ? 1 : 0;
-        pos += b * pow(2, 10 - (i + 1));
-        mappedOutputValueEncoder = map(pos, 0, 1020, 0, 360); //Old low: 0, Old high: 1020, New low: -180, New high: 180
-    }
-    for (int i = 0; i < 6; i++) {
-        digitalWrite(encoderClockPin, LOW);
-        digitalWrite(encoderClockPin, HIGH);
-    }
-    digitalWrite(encoderClockPin, LOW);
-    digitalWrite(encoderClockPin, HIGH);
-    //Serial.println(mappedOutputValueEncoder);
-}*/
-
-/*
-See funktsioon võtab andmed ch massiivi 6 elemendist
-ja seejärel kontrollib. Kui väärtus on vähem kui 400
-siis boolean muutujasse rightLightOn muudab true'ks ja
-seejörel kolm sekundit saadetakse HIGH signaali parempoolsete
-suunatuledele. Kui taimer jõuab kolme sekundini siis boolean rightLightOn
-muudab false'ks ja parempoolsete suunatuledele saadetakse LOW signaal.
-*/
 void rightTurningLights (int channel6)
 {
     if (channel6 < 400 )
@@ -308,14 +206,6 @@ void rightTurningLights (int channel6)
     }
 }
 
-/*
-See funktsioon võtab andmed ch massiivi 6 elemendist
-ja seejärel kontrollib. Kui väärtus on rohkem kui 600
-siis boolean muutujasse leftLightOn muudab true'ks ja
-seejörel kolm sekundit saadetakse HIGH signaali vasakpoolsete
-suunatuledele. Kui taimer jõuab kolme sekundini siis boolean leftLightOn
-muudab false'ks ja vasakpoolsete suunatuledele saadetakse LOW signaal.
-*/
 void leftTurningLights (int channel6)
 {
     if (channel6 > 600 )
@@ -334,11 +224,6 @@ void leftTurningLights (int channel6)
     }
 }
 
-/*See funktsioon võtab andmed ch massiivi 5 elemendist
-ja seejärel kontrollib. Kui väärtus on rohkem kui 988
-siis taga- ja esituled lülitakse sisse saadetes rearFrontLights
-pinnile HIGH signaali. Vastasel juhul saadetakse LOW signaal.
-*/
 void turnFrontAndRearLightsOn(int channel5)
 {
     if (channel5 > 988)
