@@ -148,30 +148,11 @@ void turn_wheels(int channel0) {
   if (channel0 < 485) {
     digitalWrite(turningStepperDirection, HIGH);
     Timer1.pwm(turningStepperPulse, 512, 20000);
-//    if (currentWheelPosition < maxLeftTurn) {
-//      for (int i = 0; i < 10000; i += 1) {
-//        currentMicros = micros();
-//        if (currentMicros - previousMicros >= delay_Micros) {
-//          previousMicros = currentMicros;
-//          digitalWrite(turningStepperPulse, HIGH);
-//          digitalWrite(turningStepperPulse, LOW);
-//        }
-//      }
-//    } 
   }
  if (channel0 > 515) {
   digitalWrite(turningStepperDirection, LOW);
   Timer1.pwm(turningStepperPulse, 512, 20000);
-//  if (currentWheelPosition >= maxRightTurn){
-//    for (int i = 0; i < 10000; i += 1) {
-//      currentMicros = micros();
-//      if (currentMicros - previousMicros >= delay_Micros) {
-//        previousMicros = currentMicros;
-//        digitalWrite(turningStepperPulse, HIGH);
-//        digitalWrite(turningStepperPulse, LOW);
-//      }
-//    }
-//  }
+
  }
 // if (channel0 < 515 && channel0 > 485) {
 //
