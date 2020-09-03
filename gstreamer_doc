@@ -1,0 +1,19 @@
+-!-!-!-!-!-!-!-!-!-!-!-!-!-!-
+
+TESTING SERVER $ 
+gst-launch-1.0 -e \
+videomixer name=mix \
+ sink_0::xpos=0   sink_0::ypos=0 \
+ ! queue ! videorate max-rate=20 ! autovideoconvert ! nvv4l2h265enc ! h265parse ! rtph265pay ! udpsink host=127.0.0.1 port=5000 \
+v4l2src device=/dev/video0 \
+ ! video/x-raw,format=YUY2,width=640,height=480 \
+ ! mix.sink_0 \
+
+TESTING CLIENT $ 
+
+gst-launch-1.0 udpsrc port=5000 ! \
+application/x-rtp,media=video,payload=96,encoding-name=H265 ! \
+rtph265depay ! h265parse ! nvv4l2decoder ! \
+autovideoconvert ! ximagesink sync=false
+
+-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-
