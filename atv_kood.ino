@@ -140,8 +140,10 @@ void turn_wheels(int channel0)
     channel0 = map(channel0, 0, 1000, 1000, 0);
     targetPosition = map(channel0, 0, 1000, encoderMaxRightSteer, encoderMaxLeftSteer);
 
-    //Serial.print("Enkooder: \t"); Serial.print(mappedOutputValueEncoder);
-    //Serial.print("Pult: \t"); Serial.println(targetPosition);
+    /* debuggimiseks
+    Serial.print("Enkooder: \t"); Serial.print(mappedOutputValueEncoder);
+    Serial.print("Pult: \t"); Serial.println(targetPosition);
+    */
 
     if (targetPosition > mappedOutputValueEncoder + 10)
     {
