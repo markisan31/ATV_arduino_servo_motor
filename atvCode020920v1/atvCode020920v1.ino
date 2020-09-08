@@ -313,7 +313,7 @@ void leftTurningLights (int channel6, int controlChannel)
     }
     if(leftLightsTimer.isEnabled())
     {
-        leftLightsTimer.isReady();n");
+        leftLightsTimer.isReady();
         analogWrite(leftTurnLight, 255);
     }
     else
