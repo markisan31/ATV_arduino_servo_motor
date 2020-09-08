@@ -7,6 +7,11 @@
 #include <std_msgs/Float32MultiArray.h>
 #include <sensor_msgs/Joy.h>
 #include <std_msgs/String.h>
+#include "GyverTimer.h"
+
+GTimer leftLightsTimer(MS);
+GTimer rightLightsTimer(MS);
+
 
 //Using Arduino Mega
 //pins in use Digital - [2, 4, 5, 6, 7, 8, 9, 10, 11, 12], Analog - [0, 1, 2] 5V, GND
@@ -51,14 +56,8 @@ int encoder_reading;
 long currentMicros = 0;
 long previousMicros = 0;
 
-
-unsigned static long previousMillisLeft = 0;
-unsigned static long previousMillisRight = 0;
-unsigned long currentMillisLeft = 0;
-unsigned long currentMillisRight = 0;
-const long turnLightsInterval = 3000;
-boolean leftLightOn = false;
-boolean rightLightOn = false;
+boolean leftLightsFlag = false;
+boolean rightLightsFlag = false;
 
 const int encoderMaxLeftSteer = 664;
 const int encoderMaxRightSteer = 256;
@@ -111,7 +110,7 @@ void setup()
 
 void loop()
 {
-    currentMillisLeft, currentMillisRight = millis();
+    
     
     nh.spinOnce();
 
@@ -125,9 +124,9 @@ void loop()
 
     pushBreak(ch[4], ch[7]);
 
-    //leftTurningLights(ch[6], ch[7]);
+    leftTurningLights(ch[6], ch[7]);
 
-    //rightTurningLights(ch[6], ch[7]);
+    rightTurningLights(ch[6], ch[7]);
 
     //turnFrontAndRearLightsOn(ch[5], ch[7]);
 
@@ -149,7 +148,6 @@ void read_rc()
     }
     count = 0;
 }
-
 /*
  See funktsioon võtab andmed ch massiivi 4 elemendist
  ja seejärel kontrollib. Kui väärtus on rohkem, kui 10
@@ -196,6 +194,7 @@ void turn_wheels(int channel0, int controlChannel)
     }
     
     targetPosition = map(channel0, 0, 1000, encoderMaxRightSteer, encoderMaxLeftSteer);
+    
 
     if (targetPosition > mappedOutputValueEncoder + 10)
     {
@@ -269,22 +268,25 @@ muudab false'ks ja parempoolsete suunatuledele saadetakse LOW signaal.
 */
 void rightTurningLights (int channel6, int controlChannel)
 {
-    if (controlChannel < 500) {
+    if (controlChannel < 500) 
+    {
       //channel6 = map(buttons.data[?], -1, 1, 0, 1000);
     }
     
-    if (channel6 < 400 )
+    if (channel6 < 400 && leftLightsFlag == false)
     {
-        previousMillisRight = currentMillisRight;
-        rightLightOn = true;
+        rightLightsTimer.setTimeout(3000);
+        rightLightsFlag = true;
     }
-    if (currentMillisRight > 3000 && currentMillisRight - previousMillisRight <= turnLightsInterval && leftLightOn == false)
+    
+    if(rightLightsTimer.isEnabled())
     {
+        rightLightsTimer.isReady();
         analogWrite(rightTurnLight, 255);
     }
-    else if (currentMillisRight - previousMillisRight > turnLightsInterval)
+    else
     {
-        rightLightOn = false;
+        rightLightsFlag = false;
         analogWrite(rightTurnLight, 0);
     }
 }
@@ -303,18 +305,20 @@ void leftTurningLights (int channel6, int controlChannel)
       //channel6 = map(buttons.data[?], -1, 1, 0, 1000);
     }
     
-    if (channel6 > 600 )
+    if (channel6 > 600 && rightLightsFlag)
     {
-        previousMillisLeft = currentMillisLeft;
-        leftLightOn = true;
+        leftLightsTimer.setTimeout(3000);
+        leftLightsFlag = true;
+        
     }
-    if (currentMillisLeft > 3000 && currentMillisLeft - previousMillisLeft <= turnLightsInterval && rightLightOn == false)
+    if(leftLightsTimer.isEnabled())
     {
+        leftLightsTimer.isReady();n");
         analogWrite(leftTurnLight, 255);
     }
-    else if ( currentMillisLeft - previousMillisLeft > turnLightsInterval)
+    else
     {
-        leftLightOn = false;
+        leftLightsFlag = false;
         analogWrite(leftTurnLight, 0);
     }
 }
