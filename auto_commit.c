@@ -5,6 +5,7 @@
 #define gitSTATUS "git status"
 #define gitADDALL "git add --all"
 #define gitCOMMIT "git commit"
+#define gitPUSH "git push"
 
 /*  "gst-launch-1.0 udpsrc port=5000 ! \
 application/x-rtp,media=video,payload=96,encoding-name=H265 ! \
@@ -25,6 +26,7 @@ int main()
   system(gitSTATUS);
   system(gitADDALL);
   system(gitCOMMIT);
+  system(gitPUSH);
 
   return 0;
 }
