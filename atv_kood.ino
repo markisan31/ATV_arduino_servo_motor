@@ -3,31 +3,36 @@
 static int count;
 int ch[] = {0, 0, 500, 0, 0, 0, 491, 0, 0};
 
-constexpr int8_t gas_motor_direction = 4;
-constexpr int8_t gas_motor_pwm = 5;
-constexpr int8_t motor_interface_type = 1;
+constexpr uint8_t gas_motor_direction = 4;
+constexpr uint8_t gas_motor_pwm = 5;
+constexpr uint8_t motor_interface_type = 1;
 
-constexpr int8_t turning_stepper_direction = 6;
-constexpr int8_t turning_stepper_pulse = 7;
-constexpr int8_t disable_stepper_pin = 13;
+constexpr uint8_t turning_stepper_direction = 6;
+constexpr uint8_t turning_stepper_pulse = 7;
+constexpr uint8_t disable_stepper_pin = 13;
 
-constexpr int8_t break_actuator_pwm = 8;
-constexpr int8_t break_actuator_direction = 9;
+constexpr uint8_t break_actuator_pwm = 8;
+constexpr uint8_t break_actuator_direction = 9;
 
-constexpr int8_t encoder_data_pin = 10;
-constexpr int8_t encoder_cs_pin = 11;
-constexpr int8_t encoder_clock_pin = 12;
+constexpr uint8_t encoder_data_pin = 10;
+constexpr uint8_t encoder_cs_pin = 11;
+constexpr uint8_t encoder_clock_pin = 12;
 
-constexpr int8_t left_turn_light = 44
-constexpr int8_t right_turn_light = 45
-constexpr int8_t real_front_lights = 46
+constexpr uint8_t left_turn_light = 44;
+constexpr uint8_t right_turn_light = 45;
+constexpr uint8_t real_front_lights = 46;
 
-int8_t delay_micros = 80;
-int8_t resolution = 10;
-int16_t mapped_output_value;
-int16_t mapped_output_value_encoder;
-int16_t target_position;
-int16_t encoder_reading;
+uint16_t rc_starting_left_pos = 485;
+uint16_t rc_starting_right_pos = 515;
+
+
+
+uint8_t delay_micros = 80;
+uint8_t resolution = 10;
+uint16_t mapped_output_value;
+uint16_t mapped_output_value_encoder;
+uint16_t target_position;
+uint16_t encoder_reading;
 short current_micros = 0;
 short previous_micros = 0;
 
@@ -168,21 +173,23 @@ void turn_wheels(int channel0)
 
 void output_gas_signal(int channel2)
 {
-    if (channel2 > 515)
+    uint8_t mapped_output_value_new_low = 45;
+    uint8_t mapped_output_value_new_high = 80;
+    if (channel2 > rc_starting_right_pos)
     {
-        mapped_output_value = map(channel2, 515, 1000, 45, 80);
+        mapped_output_value = map(channel2, 515, 1000, mapped_output_value_new_low, mapped_output_value_new_high);
         digitalWrite(gas_motor_direction, HIGH);
         analogWrite(gas_motor_pwm, mappedOutputValue);
     }
-    else if (channel2 < 485 )
+    else if (channel2 < rc_starting_left_pos )
     {
-        mapped_output_value = map(channel2, 485, 0, 45, 80);
+        mapped_output_value = map(channel2, 485, 0, mapped_output_value_new_low, mapped_output_value_new_high);
         digitalWrite(gas_motor_direction, LOW);
         analogWrite(gas_motor_pwm, mapped_output_value);
     }
     else
     {
-        analogWrite(gas_motor_pwm, 45);
+        analogWrite(gas_motor_pwm, mapped_output_value_new_low);
     }
 
 }
