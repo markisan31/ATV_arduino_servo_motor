@@ -1,7 +1,4 @@
 #include "PPMReader.h"
-#include <AccelStepper.h>
-
-PPMReader ppmReader(2, 0, false);
 
 static int count;
 int ch[] = {0, 0, 500, 0, 0, 0, 491, 0, 0};
