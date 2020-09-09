@@ -1,81 +1,82 @@
 #include "PPMReader.h"
 #include <AccelStepper.h>
 
-#define leftTurnLight 44
-#define rightTurnLight 45
-#define rearFrontLights 46
-
 PPMReader ppmReader(2, 0, false);
 
 static int count;
-int ch[9] = {0, 0, 500, 0, 0, 0, 491, 0, 0};
+int ch[] = {0, 0, 500, 0, 0, 0, 491, 0, 0};
 
-const int gasMotorDirection = 4;
-const int gasMotorPwm = 5;
-const int motorInterfaceType = 1;
+constexpr int8_t gas_motor_direction = 4;
+constexpr int8_t gas_motor_pwm = 5;
+constexpr int8_t motor_interface_type = 1;
 
-const int turningStepperDirection = 6;
-const int turningStepperPulse = 7;
-const int enabledStepperPin = 13;
+constexpr int8_t turning_stepper_direction = 6;
+constexpr int8_t turning_stepper_pulse = 7;
+constexpr int8_t disable_stepper_pin = 13;
 
-const int breakActuatorPwm = 8;
-const int breakActuatorDirection = 9;
+constexpr int8_t break_actuator_pwm = 8;
+constexpr int8_t break_actuator_direction = 9;
 
-const int encoderDataPin = 10;
-const int encoderCsPin = 11;
-const int encoderClockPin = 12;
+constexpr int8_t encoder_data_pin = 10;
+constexpr int8_t encoder_cs_pin = 11;
+constexpr int8_t encoder_clock_pin = 12;
 
-int mappedOutputValue;
-int mappedOutputValueEncoder;
-int targetPosition;
-int delay_Micros = 80;
-int encoder_reading;
-long currentMicros = 0;
-long previousMicros = 0;
+constexpr int8_t left_turn_light = 44
+constexpr int8_t right_turn_light = 45
+constexpr int8_t real_front_lights = 46
 
-unsigned static long previousMillisLeft = 0;
-unsigned static long previousMillisRight = 0;
+int8_t delay_micros = 80;
+int8_t resolution = 10;
+int16_t mapped_output_value;
+int16_t mapped_output_value_encoder;
+int16_t target_position;
+int16_t encoder_reading;
+short current_micros = 0;
+short previous_micros = 0;
 
-unsigned long currentMillisLeft = 0;
-unsigned long currentMillisRight = 0;
+unsigned static short previous_millis_left = 0;
+unsigned static short previous_millis_right = 0;
 
-const long turnLightsInterval = 3000;
-const int encoderMaxLeftSteer = 664;
-const int encoderMaxRightSteer = 256;
+unsigned short current_millis_left = 0;
+unsigned short current_millis_right = 0;
 
-unsigned long startTime;
-unsigned long endTime;
+constexpr short turn_lights_interval = 3000;
+constexpr short encoder_max_left_steer = 664;
+constexpr short encoder_max_right_steer = 256;
 
-boolean leftLightOn = false;
-boolean rightLightOn = false;
+unsigned short start_time;
+unsigned short end_time;
+
+bool left_light_on = false;
+bool right_light_on = false;
 
 void setup()
 {
     Serial.begin(115200);
 
-    pinMode (breakActuatorDirection, OUTPUT);
-    pinMode (breakActuatorPwm, OUTPUT);
+    pinMode (break_actuator_direction, OUTPUT);
+    pinMode (break_actuator_pwm, OUTPUT);
 
-    pinMode (turningStepperPulse, OUTPUT);
-    pinMode (turningStepperDirection, OUTPUT);
-    pinMode (enabledStepperPin, OUTPUT);
+    pinMode (turning_stepper_pulse, OUTPUT);
+    pinMode (turning_stepper_direction, OUTPUT);
+    pinMode (disable_stepper_pin, OUTPUT);
 
-    pinMode(gasMotorPwm, OUTPUT);
-    pinMode(gasMotorDirection, OUTPUT);
+    pinMode(gas_motor_pwm, OUTPUT);
+    pinMode(gas_motor_direction, OUTPUT);
 
-    pinMode(encoderCsPin, OUTPUT);
-    pinMode(encoderClockPin, OUTPUT);
-    pinMode(encoderDataPin, INPUT);
+    pinMode(encoder_cs_pin, OUTPUT);
+    pinMode(encoder_clock_pin, OUTPUT);
+    pinMode(encoder_data_pin, INPUT);
 
-    digitalWrite(encoderClockPin, HIGH);
-    digitalWrite(encoderCsPin, LOW);
+    digitalWrite(encoder_clock_pin, HIGH);
+    digitalWrite(encoder_cs_pin, LOW);
 }
 
 void loop()
 {
     //startTime = micros();
 
-    ReadSSI();
+    read_ssi();
 
     read_rc();
 
@@ -85,16 +86,16 @@ void loop()
     //startTime = endTime - startTime;
     //Serial.println(startTime);
 
-    outputGasSignal(ch[2]);
+    output_gas_signal(ch[2]);
 
-    pushBreak(ch[4]);
+    push_break(ch[4]);
 
-    //leftTurningLights(ch[6]);
+    //left_turning_lights(ch[6]);
 
     //rightTurningLights(ch[6]);
 
-    //turnFrontAndRearLightsOn(ch[5]);
-
+    //turn_front_and_rear_lights_on(ch[5])
+    
     //turnBackwardMovingLights(ch[2]);
 
 
@@ -121,118 +122,118 @@ void read_rc()
     count = 0;
 }
 
-void pushBreak(int channel4)
+void push_break(int channel4)
 {
     if (channel4 > 10)
     {
-        digitalWrite(breakActuatorDirection, LOW);
-        digitalWrite(breakActuatorPwm, HIGH);
+        digitalWrite(break_actuator_direction, LOW);
+        digitalWrite(break_actuator_pwm, HIGH);
     }
     else if (channel4 < 10)
     {
-        digitalWrite(breakActuatorDirection, HIGH);
-        digitalWrite(breakActuatorPwm, HIGH);
+        digitalWrite(break_actuator_direction, HIGH);
+        digitalWrite(break_actuator_pwm, HIGH);
     }
 }
 
 void turn_wheels(int channel0)
 {
     channel0 = map(channel0, 0, 1000, 1000, 0);
-    targetPosition = map(channel0, 0, 1000, encoderMaxRightSteer, encoderMaxLeftSteer);
+    target_position = map(channel0, 0, 1000, encoder_max_right_steer, encoder_max_left_steer);
 
     /* debuggimiseks
     Serial.print("Enkooder: \t"); Serial.print(mappedOutputValueEncoder);
     Serial.print("Pult: \t"); Serial.println(targetPosition);
     */
 
-    if (targetPosition > mappedOutputValueEncoder + 10)
+    if (target_position > mapped_output_value_encoder + resolution)
     {
-        digitalWrite(enabledStepperPin, LOW);
-        digitalWrite(turningStepperDirection, HIGH);
-        digitalWrite(turningStepperPulse, HIGH);
+        digitalWrite(disable_stepper_pin, LOW);
+        digitalWrite(turning_stepper_direction, HIGH);
+        digitalWrite(turning_stepper_pulse, HIGH);
         delayMicroseconds(10);
-        digitalWrite(turningStepperPulse, LOW);
+        digitalWrite(turning_stepper_pulse, LOW);
     }
 
-    else if (targetPosition < mappedOutputValueEncoder - 10)
+    else if (target_position < mapped_output_value_encoder - resolution)
     {
-        digitalWrite(enabledStepperPin, LOW);
-        digitalWrite(turningStepperDirection, LOW);
-        digitalWrite(turningStepperPulse, HIGH);
+        digitalWrite(disable_stepper_pin, LOW);
+        digitalWrite(turning_stepper_direction, LOW);
+        digitalWrite(turning_stepper_pulse, HIGH);
         delayMicroseconds(10);
-        digitalWrite(turningStepperPulse, LOW);
+        digitalWrite(turning_stepper_pulse, LOW);
     }
     else
     {
-        digitalWrite(enabledStepperPin, HIGH);
+        digitalWrite(disable_stepper_pin, HIGH);
     }
 }
 
-void outputGasSignal(int channel2)
+void output_gas_signal(int channel2)
 {
     if (channel2 > 515)
     {
-        mappedOutputValue = map(channel2, 515, 1000, 45, 80);
-        digitalWrite(gasMotorDirection, HIGH);
-        analogWrite(gasMotorPwm, mappedOutputValue);
+        mapped_output_value = map(channel2, 515, 1000, 45, 80);
+        digitalWrite(gas_motor_direction, HIGH);
+        analogWrite(gas_motor_pwm, mappedOutputValue);
     }
     else if (channel2 < 485 )
     {
-        mappedOutputValue = map(channel2, 485, 0, 45, 80);
-        digitalWrite(gasMotorDirection, LOW);
-        analogWrite(gasMotorPwm, mappedOutputValue);
+        mapped_output_value = map(channel2, 485, 0, 45, 80);
+        digitalWrite(gas_motor_direction, LOW);
+        analogWrite(gas_motor_pwm, mapped_output_value);
     }
     else
     {
-        analogWrite(gasMotorPwm, 45);
+        analogWrite(gas_motor_pwm, 45);
     }
 
 }
 
-void rightTurningLights (int channel6)
+void right_turning_lights (int channel6)
 {
     if (channel6 < 400 )
     {
-        previousMillisRight = currentMillisRight;
-        rightLightOn = true;
+        previous_millis_right = current_millis_right;
+        right_light_on = true;
     }
-    if (currentMillisRight > 3000 && currentMillisRight - previousMillisRight <= turnLightsInterval && leftLightOn == false)
+    if (current_millis_right > 3000 && current_millis_right - previous_millis_right <= turn_lights_interval && left_light_on == false)
     {
-        analogWrite(rightTurnLight, 255);
+        analogWrite(right_turn_light, 255);
     }
-    else if (currentMillisRight - previousMillisRight > turnLightsInterval)
+    else if (current_millis_right - previous_millis_right > turn_lights_interval)
     {
-        rightLightOn = false;
-        analogWrite(rightTurnLight, 0);
+        right_light_on = false;
+        analogWrite(right_turn_light, 0);
     }
 }
 
-void leftTurningLights (int channel6)
+void left_turning_lights (int channel6)
 {
     if (channel6 > 600 )
     {
-        previousMillisLeft = currentMillisLeft;
-        leftLightOn = true;
+        previous_millis_left = current_millis_left;
+        left_light_on = true;
     }
-    if (currentMillisLeft > 3000 && currentMillisLeft - previousMillisLeft <= turnLightsInterval && rightLightOn == false)
+    if (current_millis_left > 3000 && current_millis_left - previous_millis_left <= turn_lights_interval && right_light_on == false)
     {
-        analogWrite(leftTurnLight, 255);
+        analogWrite(left_turn_light, 255);
     }
-    else if ( currentMillisLeft - previousMillisLeft > turnLightsInterval)
+    else if (current_millis_left - previous_millis_left > turn_lights_interval)
     {
-        leftLightOn = false;
-        analogWrite(leftTurnLight, 0);
+        left_light_on = false;
+        analogWrite(left_turn_light, 0);
     }
 }
 
-void turnFrontAndRearLightsOn(int channel5)
+void turn_front_and_rear_lights_on(int channel5)
 {
     if (channel5 > 988)
     {
-        analogWrite(rearFrontLights, 255);
+        analogWrite(real_front_lights, 255);
     }
     else
     {
-        analogWrite(rearFrontLights, 0);
+        analogWrite(real_front_lights, 0);
     }
 }

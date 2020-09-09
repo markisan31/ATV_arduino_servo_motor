@@ -1,31 +1,31 @@
-void ReadSSI(void)  // Reads steering encoder value, 12-bit
+void read_ssi(void)  // Reads steering encoder value, 12-bit
 {
-    int i;
-    char Resolution = 12;
+    int16_t i;
+    char resolution_encoder = 12;
     unsigned int bitStart = 0x0800;
 
     encoder_reading = 0;
-    digitalWrite(encoderCsPin, LOW);
+    digitalWrite(encoder_cs_pin, LOW);
     delayMicroseconds(1);
-    digitalWrite(encoderClockPin, LOW);
+    digitalWrite(encoder_clock_pin, LOW);
 
-    for(i=(Resolution-1);i>=0;i--)
+    for(i = (resolution_encoder - 1); i >= 0; i--)
     {
-        digitalWrite(encoderClockPin, HIGH);
+        digitalWrite(encoder_clock_pin, HIGH);
         delayMicroseconds(1);
 
-        if (digitalRead(encoderDataPin)) encoder_reading |= bitStart;
-        digitalWrite(encoderClockPin, LOW);
+        if (digitalRead (encoder_data_pin)) encoder_reading |= bitStart;
+        digitalWrite(encoder_clock_pin, LOW);
         bitStart = bitStart >> 1;
 
         if (i == 0)
         {
-            digitalWrite(encoderClockPin, HIGH);
-            if (digitalRead(encoderDataPin)) encoder_reading |= bitStart;
+            digitalWrite(encoder_clock_pin, HIGH);
+            if (digitalRead (encoder_data_pin)) encoder_reading |= bitStart;
         }
         
         mappedOutputValueEncoder = map(encoder_reading, 0, 3000, 0, 720);
 
     }
-    digitalWrite(encoderCsPin, HIGH);
+    digitalWrite(encoder_cs_pin, HIGH);
 }
