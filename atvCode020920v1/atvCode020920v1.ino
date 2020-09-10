@@ -9,62 +9,46 @@
 #include <std_msgs/String.h>
 #include "GyverTimer.h"
 
-GTimer leftLightsTimer(MS);
-GTimer rightLightsTimer(MS);
+GTimer left_light_timer(MS);
+GTimer right_light_timer(MS);
 
-
-//Using Arduino Mega
-//pins in use Digital - [2, 4, 5, 6, 7, 8, 9, 10, 11, 12], Analog - [0, 1, 2] 5V, GND
-//free pins Digital - [0, 1, 3, 13], Analog - [3, 4, 5], 3.3V, GND, GND, VIN
-
-//receiver attached to pin2
-PPMReader ppmReader(2, 0, false);
+//receiver attareceiver_channelsed to pin2
+PPMReader ppm_reader(2, 0, false);
 static int count;
-int ch[9] = {0, 0, 500, 0, 0, 0, 491, 0, 0};
+int receiver_channels[] = {0, 0, 500, 0, 0, 0, 491, 0, 0};
 
-//gas motor attached to pins 4(direction) and 5(pwm)
-const int gasMotorDirection = 4;
-const int gasMotorPwm = 5;
-const int motorInterfaceType = 1;
+constexpr uint8_t gas_motor_direction = 4;
+constexpr uint8_t gas_motor_pwm = 5;
+constexpr uint8_t motor_interface_type = 1;
 
-//turning stepper motor attached to pins 6(direcrtion) and 7(pulse)
-const int turningStepperDirection = 6;
-const int turningStepperPulse = 7;
-const int enabledStepperPin = 13;
+constexpr uint8_t turning_stepper_direction = 6;
+constexpr uint8_t turning_stepper_pulse = 7;
+constexpr uint8_t disable_stepper_pin = 13;
 
-//break actuator attached to pins 8(pwm) and 9(direction)
-const int breakActuatorPwm = 8;
-const int breakActuatorDirection = 9;
+constexpr uint8_t break_actuator_pwm = 8;
+constexpr uint8_t break_actuator_direction = 9;
 
-//encoder attached to pins 10(data), 11(cs), 12(clock)
-const int encoderDataPin = 10; //11
-const int encoderCsPin = 11; //12
-const int encoderClockPin = 12; //10
+constexpr uint8_t encoder_data_pin = 10;
+constexpr uint8_t encoder_cs_pin = 11;
+constexpr uint8_t encoder_clock_pin = 12;
 
-//turn lights attached to digital pwm pins 44(left) and 45(right)
-#define leftTurnLight 44 
-#define rightTurnLight 45
+constexpr uint8_t left_turn_light = 44;
+constexpr uint8_t right_turn_light = 45;
+constexpr uint8_t rear_front_lights = 46;
 
-//front and rear lights attached to digital pwm pin 46
-#define rearFrontLights 46 
+uint16_t rc_starting_left_pos = 485;
+uint16_t rc_starting_right_pos = 515;
 
-//all other variables
-int mappedOutputValue;
-int mappedOutputValueEncoder;
-int targetPosition;
-int encoder_reading;
-long currentMicros = 0;
-long previousMicros = 0;
+uint16_t mapped_output_value;
+uint16_t mapped_output_value_encoder;
+uint16_t target_position;
+uint16_t encoder_reading;
 
-boolean leftLightsFlag = false;
-boolean rightLightsFlag = false;
+bool left_light_on = false;
+bool right_light_on = false;
 
-const int encoderMaxLeftSteer = 664;
-const int encoderMaxRightSteer = 256;
-
-unsigned long startTime;
-unsigned long endTime;
-
+constexpr short encoder_max_left_steer = 664;
+constexpr short encoder_max_right_steer = 256;
 
 ros::NodeHandle  nh;
 
@@ -72,7 +56,7 @@ std_msgs::String str_msg;
 std_msgs::Float32MultiArray axes;
 std_msgs::Int32MultiArray buttons;
 std_msgs::Float32 float1;
-ros::Publisher chatter("chatter", &str_msg);
+ros::Publisher receiver_channelsatter("receiver_channelsatter", &float1);
 
 void joydata ( const sensor_msgs::Joy& joy)
 {
@@ -86,26 +70,26 @@ void setup()
 {
     nh.initNode();
     nh.subscribe(sub1);
-    //nh.advertise(chatter);
+    nh.advertise(receiver_channelsatter);
     
     Serial.begin(57600);
 
-    pinMode (breakActuatorDirection, OUTPUT);
-    pinMode (breakActuatorPwm, OUTPUT);
+    pinMode (break_actuator_direction, OUTPUT);
+    pinMode (break_actuator_pwm, OUTPUT);
 
-    pinMode (turningStepperPulse, OUTPUT);
-    pinMode (turningStepperDirection, OUTPUT);
-    pinMode (enabledStepperPin, OUTPUT);
+    pinMode (turning_stepper_pulse, OUTPUT);
+    pinMode (turning_stepper_direction, OUTPUT);
+    pinMode (disable_stepper_pin, OUTPUT);
 
-    pinMode(gasMotorPwm, OUTPUT);
-    pinMode(gasMotorDirection, OUTPUT);
+    pinMode(gas_motor_pwm, OUTPUT);
+    pinMode(gas_motor_direction, OUTPUT);
 
-    pinMode(encoderCsPin, OUTPUT);
-    pinMode(encoderClockPin, OUTPUT);
-    pinMode(encoderDataPin, INPUT);
+    pinMode(encoder_cs_pin, OUTPUT);
+    pinMode(encoder_clock_pin, OUTPUT);
+    pinMode(encoder_data_pin, INPUT);
 
-    digitalWrite(encoderClockPin, HIGH);
-    digitalWrite(encoderCsPin, LOW);
+    digitalWrite(encoder_clock_pin, HIGH);
+    digitalWrite(encoder_cs_pin, LOW);
 }
 
 void loop()
@@ -114,42 +98,42 @@ void loop()
     
     nh.spinOnce();
 
-    ReadSSI();
+    read_ssi();
 
     read_rc();
 
-    turn_wheels(ch[0], ch[7]);
+    turn_wheels(receiver_channels[0], receiver_channels[7]);
 
-    outputGasSignal(ch[2], ch[7]);
+    output_gas_signal(receiver_channels[2], receiver_channels[7]);
 
-    pushBreak(ch[4], ch[7]);
+    push_break(receiver_channels[4], receiver_channels[7]);
 
-    leftTurningLights(ch[6], ch[7]);
+    left_turning_lights(receiver_channels[6], receiver_channels[7]);
 
-    rightTurningLights(ch[6], ch[7]);
+    right_turning_lights(receiver_channels[6], receiver_channels[7]);
 
-    //turnFrontAndRearLightsOn(ch[5], ch[7]);
+    //turn_front_and_rear_lights_on(receiver_channels[5], receiver_channels[7]);
 
-    //turnBackwardMovingLights(ch[2], ch[7]);
+    //turn_backward_moving_lights(receiver_channels[2], receiver_channels[7]);
 
 }
 
 
 /*
  See funktsioon loeb andmed ressiiverist,
- muudab nende väärtust 0 ... 1000ni ja kirjutab neid massiivi ch[]
+ muudab nende väärtust 0 ... 1000ni ja kirjutab neid massiivi receiver_channels[]
 */
 void read_rc()
 {
-    while (ppmReader.get(count) != 0)
+    while (ppm_reader.get(count) != 0)
     {
-        ch[count] = map(ppmReader.get(count), 1000, 2000, 0, 1000);
+        receiver_channels[count] = map(ppm_reader.get(count), 1000, 2000, 0, 1000);
         count++;
     }
     count = 0;
 }
 /*
- See funktsioon võtab andmed ch massiivi 4 elemendist
+ See funktsioon võtab andmed receiver_channels massiivi 4 elemendist
  ja seejärel kontrollib. Kui väärtus on rohkem, kui 10
  siis aktuaatori draivi DIR pinnile saadetakse LOW signaal
  ja aktuaatori draivi PWM pinnile saadetakse HIGH signaal.
@@ -157,25 +141,25 @@ void read_rc()
  DIR pinnile saadetakse HIGH signaalja aktuaatori draivi
  PWM pinnile saadetakse HIGH signaal.
 */
-void pushBreak(int channel4, int controlChannel)
+void push_break(int receiver_channel4, int control_receiver_channel)
 {
-    if (controlChannel < 500) {
-      channel4 = map(buttons.data[0], 0, 1, 0, 1000);
+    if (control_receiver_channel < 500) {
+      receiver_channel4 = map(buttons.data[0], 0, 1, 0, 1000);
     }
-    if (channel4 > 10)
+    if (receiver_channel4 > 10)
     {
-        digitalWrite(breakActuatorDirection, LOW);
-        digitalWrite(breakActuatorPwm, HIGH);
+        digitalWrite(break_actuator_direction, LOW);
+        digitalWrite(break_actuator_pwm, HIGH);
     }
-    else if (channel4 < 10)
+    else if (receiver_channel4 < 10)
     {
-        digitalWrite(breakActuatorDirection, HIGH);
-        digitalWrite(breakActuatorPwm, HIGH);
+        digitalWrite(break_actuator_direction, HIGH);
+        digitalWrite(break_actuator_pwm, HIGH);
     }
 }
 
 /*
- See funktsioon võtab andmed ch massiivi 0 elemendist
+ See funktsioon võtab andmed receiver_channels massiivi 0 elemendist
  ja seejärel kontrollib. Kui väärtus on vähem, kui 485
  siis samm mootori draivi DIR pinnile saadetakse HIGH signaal
  ja siis tsüklis iga 80 ms saadetakse pulse (ehk HIGH ja LOW
@@ -184,41 +168,44 @@ void pushBreak(int channel4, int controlChannel)
  pinnile saadetakse LOW signaal ja ülejöönud on sama.
 */
 
-void turn_wheels(int channel0, int controlChannel)
+void turn_wheels(int receiver_channel0, int control_receiver_channel)
 
 {
-    if (controlChannel < 500) {
-      channel0 = map(axes.data[0], -1, 1, 0, 1000);
+    if (control_receiver_channel < 500) {
+      receiver_channel0 = mapf(axes.data[0], -1.0, 1.0, 0.0, 1000.0);
     }else{
-      channel0 = map(channel0, 0, 1000, 1000, 0);
-    }
+      receiver_channel0 = map(receiver_channel0, 0, 1000, 1000, 0);
     
-    targetPosition = map(channel0, 0, 1000, encoderMaxRightSteer, encoderMaxLeftSteer);
+    }
+    target_position = map(receiver_channel0, 0, 1000, encoder_max_right_steer, encoder_max_left_steer);
+
+    float1.data = receiver_channel0;
+    receiver_channelsatter.publish( &float1 );
     
 
-    if (targetPosition > mappedOutputValueEncoder + 10)
+    if (target_position > mapped_output_value_encoder + 10)
     {
-        digitalWrite(enabledStepperPin, LOW);
-        digitalWrite(turningStepperDirection, HIGH);
-        digitalWrite(turningStepperPulse, HIGH);  
-        digitalWrite(turningStepperPulse, LOW);
+        digitalWrite(disable_stepper_pin, LOW);
+        digitalWrite(turning_stepper_direction, HIGH);
+        digitalWrite(turning_stepper_pulse, HIGH);  
+        digitalWrite(turning_stepper_pulse, LOW);
     }
 
-    else if (targetPosition < mappedOutputValueEncoder - 10)
+    else if (target_position < mapped_output_value_encoder - 10)
     {
-        digitalWrite(enabledStepperPin, LOW);
-        digitalWrite(turningStepperDirection, LOW);
-        digitalWrite(turningStepperPulse, HIGH);
-        digitalWrite(turningStepperPulse, LOW);
+        digitalWrite(disable_stepper_pin, LOW);
+        digitalWrite(turning_stepper_direction, LOW);
+        digitalWrite(turning_stepper_pulse, HIGH);
+        digitalWrite(turning_stepper_pulse, LOW);
     }
     else
     {
-        digitalWrite(enabledStepperPin, HIGH);
+        digitalWrite(disable_stepper_pin, HIGH);
     }
 }
 
 /*
- See funktsioon võtab andmed ch massiivi 2 elemendist
+ See funktsioon võtab andmed receiver_channels massiivi 2 elemendist
  ja seejärel kontrollib. Kui väärtus on rohkem kui 515
  siis väärtus muudetakse diaposoonist 515 ... 1000
  diaposoonini 45 ... 214, seejärel muudetud väärtus
@@ -232,114 +219,119 @@ void turn_wheels(int channel0, int controlChannel)
  töötavas seisundis. Kui mingi hetk mootor kaob selle voolu, siis
  peab tegema terve süsteemi restart.
  */
-void outputGasSignal(int channel2, int controlChannel)
+void output_gas_signal(int receiver_channel2, int control_receiver_channel)
 {
 
-    if (controlChannel < 500) {
-      channel2 = map(axes.data[1], -1, 1, 0, 1000);
+    if (control_receiver_channel < 500) {
+      receiver_channel2 = mapf(axes.data[1], -1, 1, 0, 1000);
     }
     
-    if (channel2 > 515)
+    if (receiver_channel2 > 515)
     {
-        mappedOutputValue = map(channel2, 515, 1000, 45, 80);
-        digitalWrite(gasMotorDirection, HIGH);
-        analogWrite(gasMotorPwm, mappedOutputValue);
+        mapped_output_value = map(receiver_channel2, 515, 1000, 45, 80);
+        digitalWrite(gas_motor_direction, HIGH);
+        analogWrite(gas_motor_pwm, mapped_output_value);
     }
-    else if (channel2 < 485)
+    else if (receiver_channel2 < 485)
     {
-        mappedOutputValue = map(channel2, 485, 0, 45, 80);
-        digitalWrite(gasMotorDirection, LOW);
-        analogWrite(gasMotorPwm, mappedOutputValue);
+        mapped_output_value = map(receiver_channel2, 485, 0, 45, 80);
+        digitalWrite(gas_motor_direction, LOW);
+        analogWrite(gas_motor_pwm, mapped_output_value);
     }
     else
     {
-        analogWrite(gasMotorPwm, 45);
+        analogWrite(gas_motor_pwm, 45);
     }
 
 }
 
 /*
-See funktsioon võtab andmed ch massiivi 6 elemendist
+See funktsioon võtab andmed receiver_channels massiivi 6 elemendist
 ja seejärel kontrollib. Kui väärtus on vähem kui 400
 siis boolean muutujasse rightLightOn muudab true'ks ja
 seejörel kolm sekundit saadetakse HIGH signaali parempoolsete
 suunatuledele. Kui taimer jõuab kolme sekundini siis boolean rightLightOn
 muudab false'ks ja parempoolsete suunatuledele saadetakse LOW signaal.
 */
-void rightTurningLights (int channel6, int controlChannel)
+void right_turning_lights (int receiver_channel6, int control_receiver_channel)
 {
-    if (controlChannel < 500) 
+    if (control_receiver_channel < 500) 
     {
-      //channel6 = map(buttons.data[?], -1, 1, 0, 1000);
+      //receiver_channel6 = map(buttons.data[?], -1, 1, 0, 1000);
     }
     
-    if (channel6 < 400 && leftLightsFlag == false)
+    if (receiver_channel6 < 400 && left_light_on == false)
     {
-        rightLightsTimer.setTimeout(3000);
-        rightLightsFlag = true;
+        right_light_timer.setTimeout(3000);
+        right_light_on = true;
     }
     
-    if(rightLightsTimer.isEnabled())
+    if(right_light_timer.isEnabled())
     {
-        rightLightsTimer.isReady();
-        analogWrite(rightTurnLight, 255);
+        right_light_timer.isReady();
+        analogWrite(right_turn_light, 255);
     }
     else
     {
-        rightLightsFlag = false;
-        analogWrite(rightTurnLight, 0);
+        right_light_on = false;
+        analogWrite(right_turn_light, 0);
     }
 }
 
 /*
-See funktsioon võtab andmed ch massiivi 6 elemendist
+See funktsioon võtab andmed receiver_channels massiivi 6 elemendist
 ja seejärel kontrollib. Kui väärtus on rohkem kui 600
 siis boolean muutujasse leftLightOn muudab true'ks ja
 seejörel kolm sekundit saadetakse HIGH signaali vasakpoolsete
 suunatuledele. Kui taimer jõuab kolme sekundini siis boolean leftLightOn
 muudab false'ks ja vasakpoolsete suunatuledele saadetakse LOW signaal.
 */
-void leftTurningLights (int channel6, int controlChannel)
+void left_turning_lights (int receiver_channel6, int control_receiver_channel)
 {
-    if (controlChannel < 500) {
-      //channel6 = map(buttons.data[?], -1, 1, 0, 1000);
+    if (control_receiver_channel < 500) {
+      //receiver_channelsannel6 = map(buttons.data[?], -1, 1, 0, 1000);
     }
     
-    if (channel6 > 600 && rightLightsFlag)
+    if (receiver_channel6 > 600 && right_light_on)
     {
-        leftLightsTimer.setTimeout(3000);
-        leftLightsFlag = true;
+        left_light_timer.setTimeout(3000);
+        left_light_on = true;
         
     }
-    if(leftLightsTimer.isEnabled())
+    if(left_light_timer.isEnabled())
     {
-        leftLightsTimer.isReady();
-        analogWrite(leftTurnLight, 255);
+        left_light_timer.isReady();
+        analogWrite(left_turn_light, 255);
     }
     else
     {
-        leftLightsFlag = false;
-        analogWrite(leftTurnLight, 0);
+        left_light_on = false;
+        analogWrite(left_turn_light, 0);
     }
 }
 
-/*See funktsioon võtab andmed ch massiivi 5 elemendist
+/*See funktsioon võtab andmed receiver_channels massiivi 5 elemendist
 ja seejärel kontrollib. Kui väärtus on rohkem kui 988
-siis taga- ja esituled lülitakse sisse saadetes rearFrontLights
+siis taga- ja esituled lülitakse sisse saadetes rear_front_lights
 pinnile HIGH signaali. Vastasel juhul saadetakse LOW signaal.
 */
-void turnFrontAndRearLightsOn(int channel5, int controlChannel)
+void turn_front_and_rear_lights_on(int receiver_channel5, int control_receiver_channel)
 {
-    if (controlChannel < 500) {
-      //channel5 = map(buttons.data[?], -1, 1, 0, 1000);
+    if (control_receiver_channel < 500) {
+      //receiver_channelsannel5 = map(buttons.data[?], -1, 1, 0, 1000);
     }
   
-    if (channel5 > 988)
+    if (receiver_channel5 > 988)
     {
-        analogWrite(rearFrontLights, 255);
+        analogWrite(rear_front_lights, 255);
     }
     else
     {
-        analogWrite(rearFrontLights, 0);
+        analogWrite(rear_front_lights, 0);
     }
+}
+
+float mapf(float x, float in_min, float in_max, float out_min, float out_max)
+{
+  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
