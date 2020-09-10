@@ -1,6 +1,6 @@
 void read_ssi(void)  // Reads steering encoder value, 12-bit
 {
-    int16_t i;
+    uint16_t i;
     char resolution_encoder = 12;
     unsigned int bitStart = 0x0800;
 
