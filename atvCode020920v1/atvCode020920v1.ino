@@ -61,8 +61,6 @@ ros::Publisher chatter("chatter", &float1);
 void joydata ( const sensor_msgs::Joy& joy)
 {
   axes.data = joy.axes;
-  //axes.data[0] = 32.2;
-  //float1.data = axes.data[0];
   buttons.data = joy.buttons;
 }
 
@@ -75,8 +73,6 @@ void setup()
     nh.advertise(chatter);
     
     Serial.begin(57600);
-
-    pinMode(13, OUTPUT);
 
     pinMode (break_actuator_direction, OUTPUT);
     pinMode (break_actuator_pwm, OUTPUT);
@@ -151,9 +147,7 @@ void push_break(int receiver_channel4, int control_receiver_channel)
       receiver_channel4 = mapf(axes.data[2], -1.0, 1.0, 0.0, 1000.0);
     }
 
-    //float1.data = receiver_channel4;
-    //chatter.publish( &float1 );
-    
+  
     if (receiver_channel4 > 10)
     {
         digitalWrite(break_actuator_direction, LOW);
@@ -187,8 +181,6 @@ void turn_wheels(int receiver_channel0, int control_receiver_channel)
     }
     target_position = map(receiver_channel0, 0, 1000, encoder_max_right_steer, encoder_max_left_steer);
 
-    float1.data = receiver_channel0;
-    chatter.publish( &float1 );
     
 
     if (target_position > mapped_output_value_encoder + 10)
@@ -234,8 +226,6 @@ void output_gas_signal(int receiver_channel2, int control_receiver_channel)
       receiver_channel2 = mapf(axes.data[0], -1, 1, 0, 1000);
     }
 
-    //float1.data = receiver_channel2;
-    //chatter.publish( &float1 );
     if (receiver_channel2 > 515)
     {
         mapped_output_value = map(receiver_channel2, 515, 1000, 45, 80);
