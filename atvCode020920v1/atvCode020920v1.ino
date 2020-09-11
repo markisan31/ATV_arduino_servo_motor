@@ -56,11 +56,13 @@ std_msgs::String str_msg;
 std_msgs::Float32MultiArray axes;
 std_msgs::Int32MultiArray buttons;
 std_msgs::Float32 float1;
-ros::Publisher receiver_channelsatter("receiver_channelsatter", &float1);
+ros::Publisher chatter("chatter", &float1);
 
 void joydata ( const sensor_msgs::Joy& joy)
 {
   axes.data = joy.axes;
+  //axes.data[0] = 32.2;
+  //float1.data = axes.data[0];
   buttons.data = joy.buttons;
 }
 
@@ -70,9 +72,11 @@ void setup()
 {
     nh.initNode();
     nh.subscribe(sub1);
-    nh.advertise(receiver_channelsatter);
+    nh.advertise(chatter);
     
     Serial.begin(57600);
+
+    pinMode(13, OUTPUT);
 
     pinMode (break_actuator_direction, OUTPUT);
     pinMode (break_actuator_pwm, OUTPUT);
@@ -144,8 +148,12 @@ void read_rc()
 void push_break(int receiver_channel4, int control_receiver_channel)
 {
     if (control_receiver_channel < 500) {
-      receiver_channel4 = map(buttons.data[0], 0, 1, 0, 1000);
+      receiver_channel4 = mapf(axes.data[2], -1.0, 1.0, 0.0, 1000.0);
     }
+
+    //float1.data = receiver_channel4;
+    //chatter.publish( &float1 );
+    
     if (receiver_channel4 > 10)
     {
         digitalWrite(break_actuator_direction, LOW);
@@ -172,7 +180,7 @@ void turn_wheels(int receiver_channel0, int control_receiver_channel)
 
 {
     if (control_receiver_channel < 500) {
-      receiver_channel0 = mapf(axes.data[0], -1.0, 1.0, 0.0, 1000.0);
+      receiver_channel0 = mapf(axes.data[0], -1, 1, 0, 1000);
     }else{
       receiver_channel0 = map(receiver_channel0, 0, 1000, 1000, 0);
     
@@ -180,7 +188,7 @@ void turn_wheels(int receiver_channel0, int control_receiver_channel)
     target_position = map(receiver_channel0, 0, 1000, encoder_max_right_steer, encoder_max_left_steer);
 
     float1.data = receiver_channel0;
-    receiver_channelsatter.publish( &float1 );
+    chatter.publish( &float1 );
     
 
     if (target_position > mapped_output_value_encoder + 10)
@@ -223,9 +231,11 @@ void output_gas_signal(int receiver_channel2, int control_receiver_channel)
 {
 
     if (control_receiver_channel < 500) {
-      receiver_channel2 = mapf(axes.data[1], -1, 1, 0, 1000);
+      receiver_channel2 = mapf(axes.data[0], -1, 1, 0, 1000);
     }
-    
+
+    //float1.data = receiver_channel2;
+    //chatter.publish( &float1 );
     if (receiver_channel2 > 515)
     {
         mapped_output_value = map(receiver_channel2, 515, 1000, 45, 80);
@@ -257,7 +267,7 @@ void right_turning_lights (int receiver_channel6, int control_receiver_channel)
 {
     if (control_receiver_channel < 500) 
     {
-      //receiver_channel6 = map(buttons.data[?], -1, 1, 0, 1000);
+      receiver_channel6 = map(buttons.data[0], -1, 1, 0, 1000);
     }
     
     if (receiver_channel6 < 400 && left_light_on == false)
