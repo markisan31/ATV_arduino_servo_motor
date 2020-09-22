@@ -1,13 +1,13 @@
 #include "PPMReader.h"
 #include <stdint.h>
 #include <stdlib.h>
-/*#include <ros.h>
+#include <ros.h>
 #include <std_msgs/Float32.h>
 #include <std_msgs/Int32MultiArray.h>
 #include <std_msgs/Float32MultiArray.h>
 #include <sensor_msgs/Joy.h>
 #include <std_msgs/String.h>
-*/
+
 #include "GyverTimer.h"
 
 GTimer left_light_timer(MS);
@@ -51,30 +51,29 @@ bool right_light_on = false;
 constexpr short encoder_max_left_steer = 664;
 constexpr short encoder_max_right_steer = 256;
 
-/*ros::NodeHandle  nh;
+ros::NodeHandle  nh;
 
 std_msgs::String str_msg;
 std_msgs::Float32MultiArray axes;
 std_msgs::Int32MultiArray buttons;
 std_msgs::Float32 float1;
 ros::Publisher chatter("chatter", &float1);
-*/
 
-//void joydata ( const sensor_msgs::Joy& joy)
-//{
-//  axes.data = joy.axes;
-//  buttons.data = joy.buttons;
+void joydata ( const sensor_msgs::Joy& joy)
+{
+  axes.data = joy.axes;
+  buttons.data = joy.buttons;
   //nh.loginfo("hello");
-//}
+}
 
-//ros::Subscriber<sensor_msgs::Joy> sub1("joy", joydata);
+ros::Subscriber<sensor_msgs::Joy> sub1("joy", joydata);
 
 void setup()
 {
     
-    //nh.initNode();
-    //nh.subscribe(sub1);
-    //nh.advertise(chatter);
+    nh.initNode();
+    nh.subscribe(sub1);
+    nh.advertise(chatter);
     
     Serial.begin(57600);
 
@@ -102,7 +101,7 @@ void loop()
 {
     
     
-    //nh.spinOnce();
+    nh.spinOnce();
 
     read_ssi();
 
@@ -115,7 +114,7 @@ void loop()
 
     output_gas_signal(receiver_channels[2], receiver_channels[7]);
 
-    //push_break(receiver_channels[4], receiver_channels[7]);
+    push_break(receiver_channels[4], receiver_channels[7]);
 
     left_turning_lights(receiver_channels[6], receiver_channels[7]);
 
@@ -152,9 +151,9 @@ void read_rc()
 */
 void push_break(int receiver_channel4, int control_receiver_channel)
 {
-    /*if (control_receiver_channel > 500) {
+    if (control_receiver_channel > 500) {
       receiver_channel4 = mapf(axes.data[2], -1.0, 1.0, 0.0, 1000.0);
-    }*/
+    }
 
   
     if (receiver_channel4 > 10)
@@ -182,16 +181,16 @@ void push_break(int receiver_channel4, int control_receiver_channel)
 void turn_wheels(int receiver_channel0, int control_receiver_channel)
 
 {
-    /*if (control_receiver_channel > 500) {
+    if (control_receiver_channel > 500) {
       receiver_channel0 = mapf(axes.data[0], -1.0, 1.0, 0.0, 1000.0);
     }else{
       receiver_channel0 = map(receiver_channel0, 0, 1000, 1000, 0);
-    */
-    //}
+    
+    }
     target_position = map(receiver_channel0, 0, 1000, encoder_max_right_steer, encoder_max_left_steer);
 
-    //float1.data = receiver_channel0;
-    //chatter.publish(&float1);
+    float1.data = receiver_channel0;
+    chatter.publish(&float1);
 
     if (target_position > mapped_output_value_encoder + 10)
     {
@@ -232,9 +231,9 @@ void turn_wheels(int receiver_channel0, int control_receiver_channel)
 void output_gas_signal(int receiver_channel2, int control_receiver_channel)
 {
 
-    //if (control_receiver_channel > 500) {
-    //  receiver_channel2 = mapf(axes.data[0], -1, 1, 0, 1000);
-    //}
+    if (control_receiver_channel > 500) {
+      receiver_channel2 = mapf(axes.data[0], -1, 1, 0, 1000);
+    }
 
         //Serial.println(receiver_channel2);
 
@@ -270,11 +269,11 @@ muudab false'ks ja parempoolsete suunatuledele saadetakse LOW signaal.
 */
 void right_turning_lights (int receiver_channel6, int control_receiver_channel)
 {
-    /*if (control_receiver_channel > 500) 
+    if (control_receiver_channel > 500) 
     {
       receiver_channel6 = map(buttons.data[0], -1, 1, 0, 1000);
     }
-    */
+    
     if (receiver_channel6 < 400 && left_light_on == false)
     {
         right_light_timer.setTimeout(3000);
