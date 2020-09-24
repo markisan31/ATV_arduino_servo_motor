@@ -52,11 +52,10 @@ char tempChars[numChars];
 boolean newData = false;
 uint8_t serialConnectionCounter = 0;
 uint8_t stearingLimiter = 70;
-int remoteRotation = 1500;
-int remoteThrottle = 0;
-int remoteBrake = 1000;
-int remoteLeftLight = 0;
-int remoteRightLight = 0;
+int remote_rotation = 500;
+int remote_throttle = 0;
+int remote_brake = 1000;
+int turning_lights = 0;
 int remoteHorn = 1500;
 int remoteControl = 1000; // if 2000 then serial interface works
 int remoteGear = 1000;
@@ -95,25 +94,34 @@ void loop()
 
     read_ssi();
 
-    read_rc();
-    //readFromSerial();
+    //read_rc();
+    readFromSerial();
+    //readData();
     
-    
 
-    turn_wheels(receiver_channels[0], receiver_channels[7]);
+    turn_wheels(remote_rotation);
 
 
-    output_gas_signal(receiver_channels[2], receiver_channels[7]);
+    output_gas_signal(remote_throttle);
 
-    push_break(receiver_channels[4], receiver_channels[7]);
+    push_break(remote_brake);
 
-    left_turning_lights(receiver_channels[6], receiver_channels[7]);
+    left_turning_lights(turning_lights);
 
-    right_turning_lights(receiver_channels[6], receiver_channels[7]);
+    right_turning_lights(turning_lights);
 
     turn_front_and_rear_lights_on(receiver_channels[5], receiver_channels[7]);
 
     //turn_backward_moving_lights(receiver_channels[2], receiver_channels[7]);
+
+    //Serial.print("Rotation ");
+    //Serial.println(remote_rotation);
+    //Serial.print("Throttle ");
+    //Serial.println(remote_throttle);
+    //Serial.print("Brake ");
+    //Serial.println(remote_brake);
+    //Serial.print("Turning lights ");
+    //Serial.println(turning_lights);
 
 }
 
@@ -122,7 +130,7 @@ void loop()
  See funktsioon loeb andmed ressiiverist,
  muudab nende väärtust 0 ... 1000ni ja kirjutab neid massiivi receiver_channels[]
 */
-void read_rc()
+/*void read_rc()
 {
     while (ppm_reader.get(count) != 0)
     {
@@ -130,7 +138,7 @@ void read_rc()
         count++;
     }
     count = 0;
-}
+}*/
 /*
  See funktsioon võtab andmed receiver_channels massiivi 4 elemendist
  ja seejärel kontrollib. Kui väärtus on rohkem, kui 10
@@ -140,10 +148,8 @@ void read_rc()
  DIR pinnile saadetakse HIGH signaalja aktuaatori draivi
  PWM pinnile saadetakse HIGH signaal.
 */
-void push_break(int receiver_channel4, int control_receiver_channel)
+void push_break(int receiver_channel4)
 {
-   
-    
     
     
     uint8_t value = digitalRead(break_position);
@@ -175,7 +181,7 @@ void push_break(int receiver_channel4, int control_receiver_channel)
  pinnile saadetakse LOW signaal ja ülejöönud on sama.
 */
 
-void turn_wheels(int receiver_channel0, int control_receiver_channel)
+void turn_wheels(int receiver_channel0)
 
 {
 
@@ -223,7 +229,7 @@ void turn_wheels(int receiver_channel0, int control_receiver_channel)
  töötavas seisundis. Kui mingi hetk mootor kaob selle voolu, siis
  peab tegema terve süsteemi restart.
  */
-void output_gas_signal(int receiver_channel2, int control_receiver_channel)
+void output_gas_signal(int receiver_channel2)
 {
 
     
@@ -254,7 +260,7 @@ seejörel kolm sekundit saadetakse HIGH signaali parempoolsete
 suunatuledele. Kui taimer jõuab kolme sekundini siis boolean rightLightOn
 muudab false'ks ja parempoolsete suunatuledele saadetakse LOW signaal.
 */
-void right_turning_lights (int receiver_channel6, int control_receiver_channel)
+void right_turning_lights (int receiver_channel6)
 {
     if (receiver_channel6 < 400 && left_light_on == false)
     {
@@ -282,11 +288,11 @@ seejörel kolm sekundit saadetakse HIGH signaali vasakpoolsete
 suunatuledele. Kui taimer jõuab kolme sekundini siis boolean leftLightOn
 muudab false'ks ja vasakpoolsete suunatuledele saadetakse LOW signaal.
 */
-void left_turning_lights (int receiver_channel6, int control_receiver_channel)
+void left_turning_lights (int receiver_channel6)
 {
 
     
-    if (receiver_channel6 > 600 && right_light_on)
+    if (receiver_channel6 > 600 && right_light_on == false)
     {
         left_light_timer.setTimeout(3000);
         left_light_on = true;
@@ -345,12 +351,12 @@ void readFromSerial(){
       else{
         
         if (serialConnectionCounter > 100){
-            remoteRotation = 1500;
-            remoteThrottle = 1500;
-            //remoteHorn = mySensVals[5];
-            remoteBrake = 1000;
-            remoteLeftLight  = 2000;
-            remoteRightLight = 2000;
+            remote_rotation = 500;
+            remote_throttle = 0;           
+            remote_brake = 1000;
+            turning_lights = 500;
+
+
         }
         else{
           serialConnectionCounter++;
@@ -385,7 +391,7 @@ void recvWithStartEndMarkers() {
             }
         }
 
-        else  {
+        else if (rc == startMarker) {
             recvInProgress = true;
         }
     }
@@ -398,17 +404,19 @@ void parseData() {      // split the data into its parts
     char * strtokIndx; // this is used by strtok() as an index
 
     strtokIndx = strtok(tempChars, ",");       
-    remoteRotation = atoi(strtokIndx); 
+    remote_rotation = atoi(strtokIndx); 
 
     strtokIndx = strtok(NULL, ",");      
-    remoteThrottle = atoi(strtokIndx);
+    remote_throttle = atoi(strtokIndx);
 
     strtokIndx = strtok(NULL, ",");
-    remoteBrake = atoi(strtokIndx);
+    remote_brake = atoi(strtokIndx);
 
     strtokIndx = strtok(NULL, ",");
-    remoteHorn = atoi(strtokIndx);
-    remoteHorn = remoteRotation;
+    turning_lights = atoi(strtokIndx);
+
+
+    
   
 
 }
@@ -419,11 +427,44 @@ void showParsedData() {
   //Serial.println(currentRotation);
  
     Serial.print("Rotation ");
-    Serial.println(remoteRotation);
+    Serial.println(remote_rotation);
     Serial.print("Throttle ");
-    Serial.println(remoteThrottle);
+    Serial.println(remote_throttle);
     Serial.print("Brake ");
-    Serial.println(remoteBrake);
-
+    Serial.println(remote_brake);
+    Serial.print("Turning lights ");
+    Serial.println(turning_lights);
    
+}
+
+void readData(){
+  
+    while (ppm_reader.get(count) != 0) {
+        receiver_channels[count] = map(ppm_reader.get(count), 1000, 2000, 0, 1000);
+        //mySensVals[count] = ppmReader.get(count);
+        count++;
+    }
+    count = 0;
+    if (ppm_reader.get(count) != 0){
+        
+        if (receiver_channels[7] < 100){
+        remote_rotation = receiver_channels[0];
+        remote_throttle = receiver_channels[2];
+        turning_lights = receiver_channels[6];
+        remote_brake = receiver_channels[4];
+
+        }
+        
+        else if (receiver_channels[7] > 600) { // reads from serial
+            readFromSerial();
+            receiver_channels[5] = 1000;
+        }
+        
+        else {
+            remote_rotation = 500;
+            remote_throttle = 0;
+            remote_brake = 1000;
+            turning_lights = 500;
+        }   
+    }
 }
